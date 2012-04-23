@@ -1,0 +1,163 @@
+<html><head><title>Coder5</title>
+<!--
+
+Todo:
+
+  - On load, give "kill-unsaved" option (keep track of modified state)
+  - Scroll JS to error (even if only approximately)
+  - Keystroke commands
+  - Load file(s) from URL(s)
+  - Add help link
+  - Make load show list of existing code
+  - Figure out auto-resizing canvas
+  - Get console working
+  - Get JS-based layout of elements
+  - Get sync with something working
+  - Get show/hide elements
+  - Start building example set
+  - Add REPL functionality
+
+ -->
+<script>
+function c5SaveState(s, key) {
+   localStorage.setItem("c5" + key, JSON.stringify(s)) ;
+}
+function c5LoadState(key) {
+   var s = localStorage.getItem("c5" + key) ;
+   if (s)
+      return JSON.parse(s) ;
+   return undefined ;
+}
+function c5GetStateFromUI() {
+   return {
+     html:document.getElementById("c5_html").value,
+     css:document.getElementById("c5_css").value,
+     js:document.getElementById("c5_js").value,
+   } ;
+}
+function c5SetUIFromState(s) {
+   document.getElementById("c5_html").value = s.html ;
+   document.getElementById("c5_css").value = s.css ;
+   document.getElementById("c5_js").value = s.js ;
+}
+function c5RunIt() {
+   var s = c5GetStateFromUI() ;
+   c5SaveState(s, "_active") ;
+   var res = document.getElementById("c5_result_div") ;
+   res.innerHTML = "<style>" + s.css + "</style>" + s.html ;
+   var jsel = document.createElement("script") ;
+   res.appendChild(jsel) ;
+   jsel.text = s.js ;
+}
+function c5OnLoad() {
+   var s = c5LoadState("_active") ;
+   if (s)
+      c5SetUIFromState(s) ;
+}
+var c5NameRegex = /^[a-zA-Z][a-zA-Z0-9_]*$/ ;
+function c5GetName(s) {
+   var nam = prompt(s) ;
+   if (!nam)
+      return undefined ;
+   if (!c5NameRegex.test(nam)) {
+      alert("Bad name; try again.") ;
+      return undefined ;
+   }
+   return nam ;
+}
+function c5Save() {
+   var nam = c5GetName("Save under what name?") ;
+   if (!nam)
+      return undefined ;
+   var oldS = localStorage["c5"+nam] ;
+   if (oldS) {
+      if (!confirm("Do you want to overwrite the existing code?"))
+         return ;
+   }
+   c5SaveState(c5GetStateFromUI(), nam) ;
+}
+function c5Load() {
+   var nam = c5GetName("Save under what name?") ;
+   if (!nam)
+      return undefined ;
+   var s = c5LoadState(nam) ;
+   if (!s) {
+      alert("No code by that name found") ;
+   } else {
+      c5SetUIFromState(s) ;
+   }
+}
+function c5Print(s) {
+   console.log(s) ;
+}
+window.onerror = function(msg, url, line) {
+   var ta = document.getElementById("c5_js") ;
+   var js = ta.value.split("\n") ;
+   var s = 0 ;
+   for (var i=0; i+1<line; i++)
+      s += js[i].length + 1 ;
+   ta.setSelectionRange(s, s) ;
+   alert("Error [" + msg + "] occurred in [" + url + "] at line " + line) ;
+   ta.focus() ;
+   return false ;
+}
+window.addEventListener('load', c5OnLoad, false) ;
+</script>
+<!-- This CSS manages the layout.  The correct way to do this is with
+     JavaScript catching the resize event, but for now this is how we
+     handle it.  Note that if we capture the resize event we'd better
+     pass it along appropriately so the end-user can also redefine it.
+ -->
+<style>
+textarea { height: 100% ; width: 100% ; }
+#c5_page_div: { position: relative ; height: 100%; width: 100% }
+#c5_left_div, #c5_right_div { position: absolute; height: 95% ; width: 50% ; }
+#c5_left_div { left: 0pt; }
+#c5_right_div { right: 0pt; }
+#c5_html_div { position: relative ; height: 15% ; width: 100% ; }
+#c5_css_div { position: relative ; height: 15% ; width: 100% ; }
+#c5_js_div { position: relative ; height: 55% ; width: 100% ; }
+#c5_console_div { position: relative ; height: 15% ; width: 100% ; }
+#c5_result_div { position: relative ; height: 100% ; width: 100% ;
+                 float: right; }
+#c5_label { opacity: .4 ; position: absolute; top:5; right:5 ; }
+#c5_controls_div { height: 5% ; width: 100% ; }
+</style></head><body>
+<div id="c5_controls_div">
+<button id="c5_run_button" onclick="c5RunIt();">Run</button>
+<button id="c5_save_button" onclick="c5Save();">Save</button>
+<button id="c5_load_button" onclick="c5Load();">Load</button>
+<!-- add these later
+Show:
+<input type="checkbox" name="c5_html_check"> HTML
+<input type="checkbox" name="c5_css_check"> CSS
+<input type="checkbox" name="c5_js_check"> JS
+<input type="checkbox" name="c5_console_check"> Console
+-->
+</div>
+<div id="c5_page_div">
+<div id="c5_left_div">
+  <div id="c5_html_div">
+    <textarea id="c5_html"></textarea>
+    <div id="c5_label">HTML</div>
+  </div>
+  <div id="c5_css_div">
+    <textarea id="c5_css"></textarea>
+    <div id="c5_label">CSS</div>
+  </div>
+  <div id="c5_js_div">
+    <textarea id="c5_js"></textarea>
+    <div id="c5_label">JS</div>
+  </div>
+  <div id="c5_console_div">
+    <div id="c5_label">Console</div>
+    <textarea id="c5_console"></textarea>
+  </div>
+</div>
+<div id="c5_right_div">
+  <div id="c5_label">Result</div>
+  <div id="c5_result_div"></div>
+  </div>
+</div>
+</div>
+</body>
