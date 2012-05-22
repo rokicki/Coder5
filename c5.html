@@ -1,5 +1,8 @@
-<html><head><title>Coder5</title>
+<!DOCTYPE html>
+<html manifest="coder5.appcache"><head><title>Coder5</title>
 <!--
+
+Coder5 (C) Copyright 2012 by Radical Eye Software.
 
 Todo:
 
@@ -32,7 +35,7 @@ function c5GetStateFromUI() {
    return {
      html:document.getElementById("c5_html").value,
      css:document.getElementById("c5_css").value,
-     js:document.getElementById("c5_js").value,
+     js:document.getElementById("c5_js").value
    } ;
 }
 function c5SetUIFromState(s) {
@@ -77,7 +80,7 @@ function c5Save() {
    c5SaveState(c5GetStateFromUI(), nam) ;
 }
 function c5Load() {
-   var nam = c5GetName("Save under what name?") ;
+   var nam = c5GetName("Load from what name?") ;
    if (!nam)
       return undefined ;
    var s = c5LoadState(nam) ;
@@ -161,3 +164,4 @@ Show:
 </div>
 </div>
 </body>
+</html>
